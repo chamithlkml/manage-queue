@@ -1,0 +1,15 @@
+.selector-for-some-widget {
+    box-sizing: content-box;
+}
+
+.invalid-input{
+    border-color: #dc3545!important;
+}
+
+.highlight-input{
+	background-color: #FFFFE0;
+}
+
+.keep-hidden{
+	display: none;
+}
