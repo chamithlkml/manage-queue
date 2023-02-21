@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * Created by ManageQ.
+ * Created by Chamith Jayaweera
  * User: chamith
  * Date: 11/4/18
  * Time: 5:16 PM

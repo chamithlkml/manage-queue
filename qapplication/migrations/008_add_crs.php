@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * Created by Dropsuite Pte Ltd.
+ * Created by Chamith Jayaweera
  * User: chamith
  * Date: 12/18/18
  * Time: 6:11 PM

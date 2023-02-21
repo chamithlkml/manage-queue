@@ -1,6 +1,6 @@
 <?php
 /**
- * Created by Dropsuite Pte Ltd.
+ * Created by Chamith Jayaweera
  * User: chamith
  * Date: 8/11/18
  * Time: 2:19 PM

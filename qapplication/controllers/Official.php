@@ -2,7 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Created by ManageQ.
+ * Created by Chamith Jayaweera
  * User: chamith
  * Date: 14/9/18
  * Time: 4:39 AM
