@@ -21,7 +21,17 @@ class WaitingPoints extends CI_Model
         parent::__construct();
     }
 
-    public function add_new_waiting_point($name, $purpose_id, $waiting_point_on, $duration, $created_by)
+    /**
+     * Create a new waiting point object and returns insert id
+     *
+     * @param string $name
+     * @param integer $purpose_id
+     * @param string $waiting_point_on
+     * @param integer $duration
+     * @param integer $created_by
+     * @return integer
+     */
+    public function add_new_waiting_point(string $name, int $purpose_id, string $waiting_point_on, int $duration, int $created_by): int
     {
         $this->name = $name;
         $this->purpose_id = $purpose_id;
@@ -35,7 +45,12 @@ class WaitingPoints extends CI_Model
         return $this->db->insert_id();
     }
 
-    public function get_active_waiting_points()
+    /**
+     * Returns active waiting points
+     *
+     * @return array
+     */
+    public function get_active_waiting_points(): array
     {
         $this->db->from('waiting_points');
         $this->db->where('deleted_on', NULL);
@@ -44,7 +59,14 @@ class WaitingPoints extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function get_waiting_points($purpose_id=null, $date=null)
+    /**
+     * Returns an array of waiting point objects
+     *
+     * @param integer|null|null $purpose_id
+     * @param string|null|null $date
+     * @return array
+     */
+    public function get_waiting_points(int|null $purpose_id = null, string|null $date = null): array
     {
         $this->db->from('waiting_points');
         $this->db->where('deleted_on', NULL);

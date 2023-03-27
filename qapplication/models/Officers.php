@@ -26,7 +26,13 @@ class Officers extends CI_Model
         parent::__construct(); // construct the Model class
     }
 
-    public function get_officers($role=null)
+    /**
+     * Returns an array of active, mobile number verified officer objects
+     *
+     * @param string|null $role
+     * @return array
+     */
+    public function get_officers(string|null $role = null): array
     {
         $this->db->from('officers');
         $this->db->where('mobile_number_verified', 1);
@@ -38,7 +44,14 @@ class Officers extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function get_admin($mobile_number=null, $officer_id=null)
+    /**
+     * Returns admin object
+     *
+     * @param string|null $mobile_number
+     * @param int|null $officer_id
+     * @return object
+     */
+    public function get_admin(string|null $mobile_number = null, int|null $officer_id = null): object
     {
         $this->db->from('officers');
 
@@ -53,7 +66,14 @@ class Officers extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function issue_new_verification_token($officer_id, $verification_code)
+    /**
+     * Update mobile_number_verification_code of a given officer
+     *
+     * @param integer $officer_id
+     * @param string $verification_code
+     * @return void
+     */
+    public function issue_new_verification_token(int $officer_id, string $verification_code): void
     {
         $this->db->set('mobile_number_verification_code', $verification_code);
         $this->db->set('verification_code_issued_on', date("Y-m-d H:i:s"));
@@ -63,7 +83,22 @@ class Officers extends CI_Model
         $this->db->update('officers');
     }
 
-    public function get_officer($id=null, $mobile_number=null, $role=null, $mobile_number_verified=null, $is_active=null)
+    /**
+     * Returns officer object searched by id, mobile number, role, mobile number verified?, active?
+     *
+     * @param integer|null|null $id
+     * @param string|null|null $mobile_number
+     * @param string|null|null $role
+     * @param string|null|null $mobile_number_verified
+     * @param boolean|null|null $is_active
+     * @return object
+     */
+    public function get_officer(
+        int|null $id = null,
+        string|null $mobile_number = null,
+        string|null $role = null, string|null
+        $mobile_number_verified = null,
+        bool|null $is_active = null): object
     {
         $this->db->from('officers');
 
@@ -85,9 +120,17 @@ class Officers extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function verify_mobile_number($officers_id, $verification_code)
+    /**
+     * Verify mobile number with the verification code and returns true if verified
+     *
+     * @param integer $officers_id
+     * @param string $verification_code
+     * @return boolean
+     */
+    public function verify_mobile_number(int $officers_id, string $verification_code): bool
     {
         $result = $this->get_officer($officers_id);
+        $mobile_number_verified = false;
 
         if($result)
         {
@@ -104,14 +147,23 @@ class Officers extends CI_Model
                 $this->db->where('id', $officers_id);
                 $this->db->update('officers');
 
-                return true;
+                $mobile_number_verified = true;
             }
         }
 
-        return false;
+        return $mobile_number_verified;
     }
 
-    public function add_new_officer($name, $mobile_number, $role, $mobile_number_verification_code=null)
+    /**
+     * Create a new officer entry and returns insert id
+     *
+     * @param string $name
+     * @param string $mobile_number
+     * @param string $role
+     * @param string|null|null $mobile_number_verification_code
+     * @return integer
+     */
+    public function add_new_officer(string $name, string $mobile_number, string $role, string|null $mobile_number_verification_code = null): int
     {
         $this->name = $name;
         $this->role = $role;
@@ -129,7 +181,14 @@ class Officers extends CI_Model
         return $this->db->insert_id();
     }
 
-    public function set_mobile_number_verification_code($officers_id, $verification_code)
+    /**
+     * Set mobile number verification code of an officer object
+     *
+     * @param integer $officers_id
+     * @param string $verification_code
+     * @return void
+     */
+    public function set_mobile_number_verification_code(int $officers_id, string $verification_code): void
     {
         $this->db->set('mobile_number_verification_code', $verification_code);
         $this->db->set('verification_code_issued_on', date("Y-m-d H:i:s"));
@@ -137,7 +196,15 @@ class Officers extends CI_Model
         $this->db->update('officers');
     }
 
-    public function set_creation_data($officers_id, $created_on, $created_by)
+    /**
+     * Set officer creation date
+     *
+     * @param integer $officers_id
+     * @param string $created_on
+     * @param integer $created_by
+     * @return void
+     */
+    public function set_creation_data(int $officers_id, string $created_on, int $created_by): void
     {
         $this->db->set('created_on', $created_on);
         $this->db->set('created_by', $created_by);

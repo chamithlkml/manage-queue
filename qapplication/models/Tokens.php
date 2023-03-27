@@ -29,10 +29,23 @@ class Tokens extends CI_Model
 
     function __construct()
     {
-        parent::__construct(); // construct the Model class
+        parent::__construct();
     }
 
-    public function get_queue($id=null, $queue_number=null, $date_to_office=null, $uuid=null)
+    /**
+     * Returns a token object find by id, queue number, date to office, uuid
+     *
+     * @param integer|null|null $id
+     * @param string|null|null $queue_number
+     * @param string|null|null $date_to_office
+     * @param string|null|null $uuid
+     * @return object
+     */
+    public function get_queue(
+        int|null $id = null,
+        string|null $queue_number = null,
+        string|null $date_to_office = null,
+        string|null $uuid = null): object
     {
         $this->db->from('tokens');
 
@@ -51,7 +64,25 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function add_new_token($name, $mobile_number, $date_to_office, $mobile_number_verification_code=null, $officer_id=null, $purpose_id=null)
+    /**
+     * Create a new token object and returns inserted id
+     *
+     * @param string $name
+     * @param string $mobile_number
+     * @param string $date_to_office
+     * @param string|null|null $mobile_number_verification_code
+     * @param integer|null|null $officer_id
+     * @param integer|null|null $purpose_id
+     * @return int
+     */
+    public function add_new_token(
+        string $name,
+        string $mobile_number,
+        string $date_to_office,
+        string|null $mobile_number_verification_code = null,
+        int|null $officer_id = null,
+        int|null $purpose_id = null
+        ): int
     {
         $this->name = $name;
         $this->mobile_number = $mobile_number;
@@ -81,9 +112,17 @@ class Tokens extends CI_Model
         return $this->db->insert_id();
     }
 
-    public function verify_mobile_number($tokens_id, $verification_code)
+    /**
+     * Verify mobile number with the verification code
+     *
+     * @param integer $tokens_id
+     * @param string $verification_code
+     * @return boolean
+     */
+    public function verify_mobile_number(int $tokens_id, string $verification_code): bool
     {
         $result = $this->get_queue($tokens_id);
+        $mobile_number_verified = false;
 
         if($result)
         {
@@ -100,11 +139,11 @@ class Tokens extends CI_Model
                 $this->db->where('id', $tokens_id);
                 $this->db->update('tokens');
 
-                return true;
+                $mobile_number_verified = true;
             }
         }
 
-        return false;
+        return $mobile_number_verified;
     }
 
     /**
@@ -113,7 +152,7 @@ class Tokens extends CI_Model
      * @param $exception_tokens_id
      * @return int
      */
-    public function get_total_serviceable_tokens($date_to_office, $exception_tokens_id)
+    public function get_total_serviceable_tokens(string $date_to_office, int $exception_tokens_id): int
     {
         $this->db->from('tokens');
         $this->db->where('id !=', $exception_tokens_id);
@@ -124,7 +163,15 @@ class Tokens extends CI_Model
         return $this->db->count_all_results();
     }
 
-    public function get_last_pending_queue_token($date_to_office, $exception_tokens_id, $purpose_id=null)
+    /**
+     * Returns last pending queue token object
+     *
+     * @param string $date_to_office
+     * @param string $exception_tokens_id
+     * @param integer|null|null $purpose_id
+     * @return object
+     */
+    public function get_last_pending_queue_token(string $date_to_office, string $exception_tokens_id, int|null $purpose_id = null): object
     {
         $this->db->from('tokens');
         $this->db->where('id !=', $exception_tokens_id);
@@ -143,32 +190,25 @@ class Tokens extends CI_Model
     }
 
     public function issue_queue_position(
-        $tokens_id,
-        $service_length,
-        $office_opens_at,
-        $office_closes_at,
-        $max_queue_tickets_count,
-        $service_breaks,
-        $special_service_breaks,
-        $uuid_length,
-        $officer_id=null
-    )
+        int $tokens_id,
+        int $service_length,
+        string $office_opens_at,
+        string $office_closes_at,
+        int $max_queue_tickets_count,
+        array $service_breaks,
+        array $special_service_breaks,
+        int $uuid_length,
+        int $officer_id = null
+    ): object
     {
 
         $new_token_details = $this->get_queue($tokens_id);
 
         $purpose = $this->get_purpose($new_token_details->purpose_id);
 
-        log_message('debug', '$purpose: ' . print_r($purpose, true));
-
         $last_queue_token = $this->get_last_pending_queue_token($new_token_details->date_to_office, $tokens_id);
 
-        log_message('debug', '$last_queue_token: ' . print_r($last_queue_token, true));
-
         $total_serviceable_tokens = $this->get_total_serviceable_tokens($new_token_details->date_to_office, $tokens_id);
-
-        log_message('debug', '$total_serviceable_tokens: ' . print_r($total_serviceable_tokens, true));
-        log_message('debug', '$max_queue_tickets_count: ' . $max_queue_tickets_count);
 
         if($total_serviceable_tokens >= $max_queue_tickets_count)
         {
@@ -183,8 +223,6 @@ class Tokens extends CI_Model
         $waiting_points_for_same_purpose = $this->filter_out_old_waiting_points(
             $this->get_today_waiting_points_by_purpose($new_token_details->purpose_id)
         );
-
-        log_message('debug', '$waiting_points_for_same_purpose: ' . print_r($waiting_points_for_same_purpose, true));
 
         if(count($waiting_points_for_same_purpose) > 0)
         {
@@ -225,8 +263,6 @@ class Tokens extends CI_Model
 
                     $purposes_with_no_waiting_points = $this->get_purposes_with_no_waiting_points();
 
-                    log_message('debug', '$purposes_with_no_waiting_points: ' . print_r($purposes_with_no_waiting_points, true));
-
                     foreach($purposes_with_no_waiting_points as $purpose_with_no_waiting_points)
                     {
                         $last_token_with_no_waiting_point_purpose = $this->get_last_pending_queue_token(
@@ -250,16 +286,12 @@ class Tokens extends CI_Model
 
         $waiting_points_service_breaks = $this->get_waiting_points_service_breaks($today_waiting_points);
 
-        log_message('debug', '$waiting_points_service_breaks: ' . print_r($waiting_points_service_breaks, true));
-
         $expected_service_on_timestamp = $this->escape_service_breaks(
             $waiting_points_service_breaks,
             date("Y-m-d"),
             $expected_service_on_timestamp,
             $service_length
         );
-
-        log_message('debug', '$expected_service_on_timestamp: ' . print_r($expected_service_on_timestamp, true));
 
         $special_service_breaks_on_date = $this->get_special_service_breaks_on_date(
             $special_service_breaks,
@@ -411,7 +443,13 @@ class Tokens extends CI_Model
         );
     }
 
-    public function get_status($tokens_id)
+    /**
+     * Returns status string depending on token id
+     *
+     * @param integer $tokens_id
+     * @return string
+     */
+    public function get_status(int $tokens_id): string
     {
         $token = $this->get_queue($tokens_id);
 
@@ -430,14 +468,30 @@ class Tokens extends CI_Model
         return "Status not found";
     }
 
-    private function set($id, $column, $value)
+    /**
+     * Set value to a given column search by id
+     *
+     * @param integer $id
+     * @param string $column
+     * @param integer|string $value
+     * @return void
+     */
+    private function set(int $id, string $column, int|string $value): void
     {
         $this->db->set($column, $value);
         $this->db->where('id', $id);
         $this->db->update('tokens');
     }
 
-    public function get_last_job_started_token($date_to_office=null, $officer_id=null, $purpose_id=null)
+    /**
+     * Returns last started job's token object
+     *
+     * @param string|null|null $date_to_office
+     * @param string|null|null $officer_id
+     * @param string|null|null $purpose_id
+     * @return object
+     */
+    public function get_last_job_started_token(string|null $date_to_office = null, string|null $officer_id = null, string|null $purpose_id = null): object
     {
         $this->db->from('tokens');
         $this->db->order_by('job_started_on', 'desc');
@@ -465,7 +519,12 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function get_next_service_token()
+    /**
+     * Returns the next service token object
+     *
+     * @return object
+     */
+    public function get_next_service_token(): object
     {
         $this->db->from('tokens');
         $this->db->order_by('arrived_to_office_on', 'asc');
@@ -478,7 +537,14 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function set_service_started($tokens_id, $officer_id)
+    /**
+     * Set service started date of a given token, officer id
+     *
+     * @param integer $tokens_id
+     * @param integer $officer_id
+     * @return void
+     */
+    public function set_service_started(int $tokens_id, int $officer_id): void
     {
         $this->set(
             $tokens_id,
@@ -493,7 +559,13 @@ class Tokens extends CI_Model
         );
     }
 
-    public function get_service_started_token($officer_id)
+    /**
+     * Returns service started token object of a given officer id
+     *
+     * @param integer $officer_id
+     * @return object
+     */
+    public function get_service_started_token(int $officer_id): object
     {
         $this->db->from('tokens');
         $this->db->where('job_started_on !=', NULL);
@@ -504,7 +576,13 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function set_service_given($tokens_id)
+    /**
+     * Set service is given
+     *
+     * @param integer $tokens_id
+     * @return void
+     */
+    public function set_service_given(int $tokens_id): void
     {
         $this->set(
             $tokens_id,
@@ -513,7 +591,12 @@ class Tokens extends CI_Model
         );
     }
 
-    public function get_current_servicing_tokens()
+    /**
+     * Returns current servicing token object
+     *
+     * @return object
+     */
+    public function get_current_servicing_tokens(): object
     {
         $this->db->from('tokens');
         $this->db->where('job_started_on !=', NULL);
@@ -523,16 +606,15 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function get_estimated_waiting_time($tokens_id)
-    {
-        $token = $this->get_queue($tokens_id);
-
-        if(! $token)
-            throw new Exception("Token not found");
-
-    }
-
-    public function get_last_token_expected_service_time($officer_id, $date_to_office, $office_open_time)
+    /**
+     * Returns last token's expected service time
+     *
+     * @param integer $officer_id
+     * @param string $date_to_office
+     * @param string $office_open_time
+     * @return string
+     */
+    public function get_last_token_expected_service_time(int $officer_id, string $date_to_office, string $office_open_time): string
     {
         $this->db->from('tokens');
         $this->db->order_by('expected_service_on', 'desc');
@@ -570,7 +652,13 @@ class Tokens extends CI_Model
         return $last_service_token_expected_service_time;
     }
 
-    public function get_last_office_arrived_token($purpose_id=null)
+    /**
+     * Returns last office arrived token object
+     *
+     * @param integer|null|null $purpose_id
+     * @return object
+     */
+    public function get_last_office_arrived_token(int|null $purpose_id = null): object
     {
         $this->db->from('tokens');
         $this->db->where('date_to_office', date("Y-m-d"));
@@ -586,7 +674,13 @@ class Tokens extends CI_Model
         return $this->db->get()->row();
     }
 
-    private function get_purpose($purpose_id)
+    /**
+     * Returns purpose object
+     *
+     * @param integer $purpose_id
+     * @return object
+     */
+    private function get_purpose(int $purpose_id): object
     {
         $CI =& get_instance();
         $CI->load->model('purposes');
@@ -599,7 +693,13 @@ class Tokens extends CI_Model
         return $purpose;
     }
 
-    private function get_today_waiting_points_by_purpose($purpose_id)
+    /**
+     * Returns an array of waiting point objects filtered by purpose id
+     *
+     * @param integer $purpose_id
+     * @return array
+     */
+    private function get_today_waiting_points_by_purpose(int $purpose_id): array
     {
         $CI =& get_instance();
         $CI->load->model('waitingPoints');
@@ -608,7 +708,12 @@ class Tokens extends CI_Model
         return $CI->waitingPoints->get_waiting_points($purpose_id, $today);
     }
 
-    private function get_purposes_with_no_waiting_points()
+    /**
+     * Returns an array of puroposes with no waiting points
+     *
+     * @return array
+     */
+    private function get_purposes_with_no_waiting_points(): array
     {
         $CI =& get_instance();
         $CI->load->model('purposes');
@@ -630,7 +735,12 @@ class Tokens extends CI_Model
         return $purposes_with_no_waiting_points;
     }
 
-    private function get_today_waiting_points()
+    /**
+     * Returns an array of waiting points fallen into today
+     *
+     * @return array
+     */
+    private function get_today_waiting_points(): array
     {
         $CI =& get_instance();
         $CI->load->model('waitingPoints');
@@ -639,7 +749,13 @@ class Tokens extends CI_Model
         return $CI->waitingPoints->get_waiting_points(null, $today);
     }
 
-    private function filter_out_old_waiting_points($waiting_points)
+    /**
+     * Returns new waiting points by removing olds
+     *
+     * @param array $waiting_points
+     * @return array
+     */
+    private function filter_out_old_waiting_points(array $waiting_points): array
     {
         $filtered_waiting_points = array();
         $now = time();

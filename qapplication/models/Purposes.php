@@ -18,10 +18,15 @@ class Purposes extends CI_Model
 
     function __construct()
     {
-        parent::__construct(); // construct the Model class
+        parent::__construct();
     }
 
-    public function get_active_purposes()
+    /**
+     * Returns an array of active purposes
+     *
+     * @return array
+     */
+    public function get_active_purposes(): array
     {
 
         $this->db->from('purposes');
@@ -31,7 +36,14 @@ class Purposes extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function get_purpose($id=null, $name=null)
+    /**
+     * Returns the purpose object find by id, name
+     *
+     * @param integer|null|null $id
+     * @param string|null|null $name
+     * @return object
+     */
+    public function get_purpose(int|null $id = null, string|null $name = null): object
     {
         $this->db->from('purposes');
 
@@ -46,7 +58,14 @@ class Purposes extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function add_new_purpose($name, $created_by)
+    /**
+     * Undocumented function
+     *
+     * @param string $name
+     * @param string $created_by
+     * @return int
+     */
+    public function add_new_purpose(string $name, string $created_by): int
     {
         $existing_purpose = $this->get_purpose(null, $name);
 
@@ -63,7 +82,13 @@ class Purposes extends CI_Model
         return $this->db->insert_id();
     }
 
-    private function derive_purpose_type($purpose_name)
+    /**
+     * Derive purpose type
+     *
+     * @param string $purpose_name
+     * @return string
+     */
+    private function derive_purpose_type(string $purpose_name): string
     {
         if(strlen($purpose_name) == 0)
             throw new Exception("Purpose Name length must be non zero");
@@ -80,9 +105,4 @@ class Purposes extends CI_Model
         return $purpose_type;
     }
 
-    public function get_purposes_with_no_waiting_points()
-    {
-        $this->db->from('purposes');
-
-    }
 }
