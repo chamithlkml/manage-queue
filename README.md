@@ -1,5 +1,5 @@
 # manage-queue
-- Sample deployment is available at http://queue.managecodes.com/
+- Sample deployment is available at https://queue.managecodes.com/
 - This is a token system to avoid unnecessary queues in offices
 - This was built using CodeIgniter
 - clone your project
